@@ -135,7 +135,7 @@ fun OneUi7PillWidget(
                         )
 
                         Icon(
-                            imageVector = if (selectedMode == ModeAbsensi.AUTOMATIC_FINGERPRINT) Icons.Default.Bluetooth else Icons.Default.Edit,
+                            imageVector = if (selectedMode == ModeAbsensi.AUTOMATIC_FINGERPRINT) Icons.Default.Settings else Icons.Default.Edit,
                             contentDescription = null,
                             tint = Color.White,
                             modifier = Modifier.size(14.dp)
@@ -222,7 +222,7 @@ fun OneUi7PillWidget(
                         ),
                         shape = RoundedCornerShape(16.dp)
                     ) {
-                        Icon(Icons.Default.Bluetooth, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Icon(Icons.Default.Settings, contentDescription = null, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(6.dp))
                         Text("Bluetooth")
                     }
