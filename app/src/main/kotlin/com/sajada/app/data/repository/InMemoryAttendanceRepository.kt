@@ -25,4 +25,8 @@ class InMemoryAttendanceRepository : AttendanceRepository {
     override fun getLogsByJamaahId(jamaahId: String): List<LogAbsensi> {
         return _attendanceLogs.value.filter { it.jamaahId == jamaahId }
     }
+
+    fun clear() {
+        _attendanceLogs.value = emptyList()
+    }
 }

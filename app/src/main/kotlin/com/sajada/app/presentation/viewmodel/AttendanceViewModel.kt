@@ -62,7 +62,6 @@ class AttendanceViewModel : ViewModel() {
     )
 
     init {
-        // Preload sample log
         try {
             recordManualUseCase.execute("JM-001", WaktuShalat.DZUHUR, jadwalHariIni, System.currentTimeMillis())
         } catch (_: Exception) {}
@@ -98,12 +97,9 @@ class AttendanceViewModel : ViewModel() {
     }
 
     fun removeJamaah(id: String) {
-        // Remove from memory repo
         val list = jamaahRepo.getAll().toMutableList()
         list.removeAll { it.id == id }
-        // Re-init repo or filter
         val updated = InMemoryJamaahRepository(list)
-        // Refresh local state
         _jamaahList.value = updated.getAll()
     }
 
@@ -118,11 +114,8 @@ class AttendanceViewModel : ViewModel() {
                     bluetoothManager.connect("00:11:22:33:44:55")
                     _isBluetoothConnected.value = true
                 }
-                bluetoothManager.simulateFingerprintScan(fingerprintId, System.currentTimeMillis())
-                // Listen event
-                bluetoothManager.listenScanEvents().collect { event ->
-                    processFingerprintUseCase.execute(event, jadwalHariIni)
-                }
+                val event = FingerprintScanEvent(rawFingerprintId = fingerprintId, timestamp = System.currentTimeMillis())
+                processFingerprintUseCase.execute(event, jadwalHariIni)
             } catch (_: Exception) {}
         }
     }
@@ -137,7 +130,6 @@ class AttendanceViewModel : ViewModel() {
         if (index != -1) {
             val old = logs[index]
             logs[index] = old.copy(status = newStatus, waktuShalat = newPrayer)
-            // Save back to repo
             attendanceRepo.clear()
             logs.forEach { attendanceRepo.saveLog(it) }
         }
