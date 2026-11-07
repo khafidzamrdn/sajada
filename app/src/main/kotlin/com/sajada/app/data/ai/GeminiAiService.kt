@@ -1,5 +1,6 @@
 package com.sajada.app.data.ai
 
+import com.sajada.app.BuildConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.BufferedReader
@@ -7,15 +8,34 @@ import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
 
-class GeminiAiService(private var apiKey: String = "") {
+/**
+ * SECURITY NOTE (Google Cloud Console / Gemini API Restriction):
+ * To prevent unauthorized use or extraction of your Gemini API Key in production APKs:
+ * 1. Go to Google Cloud Console (APIs & Services > Credentials).
+ * 2. Select your Gemini API Key.
+ * 3. Under "Application restrictions", choose "Android apps".
+ * 4. Add your app's Package Name (com.sajada.app) and your release/debug certificate SHA-1 fingerprint.
+ * 5. Under "API restrictions", restrict the key strictly to "Generative Language API".
+ * This ensures the key only works inside your signed APK even if decompiled.
+ */
+class GeminiAiService(private var runtimeApiKey: String = "") {
 
     fun setApiKey(key: String) {
-        apiKey = key.trim()
+        runtimeApiKey = key.trim()
+    }
+
+    private fun getActiveApiKey(): String {
+        if (runtimeApiKey.isNotEmpty()) return runtimeApiKey
+        // Fallback to secure BuildConfig injected from local.properties
+        val buildConfigKey = BuildConfig.GEMINI_API_KEY
+        if (!buildConfigKey.isNullOrBlank()) return buildConfigKey
+        return ""
     }
 
     suspend fun askGemini(prompt: String, appDataContext: String): String = withContext(Dispatchers.IO) {
+        val apiKey = getActiveApiKey()
         if (apiKey.isEmpty()) {
-            return@withContext "Error: API Key Gemini belum diatur. Silakan masukkan API Key Anda melalui tombol pengaturan AI di pojok kanan atas."
+            return@withContext "Error: API Key Gemini belum dikonfigurasi. Harap tambahkan GEMINI_API_KEY di local.properties atau melalui menu pengaturan AI."
         }
 
         try {
