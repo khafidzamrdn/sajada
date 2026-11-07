@@ -1,15 +1,15 @@
-name: Build Android APK
+name: Build and Release APK
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
     branches: [ "main" ]
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
     - name: Checkout repository
@@ -27,7 +27,7 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-    - name: Build APK with Gradle
+    - name: Build Debug APK
       run: ./gradlew assembleDebug
 
     - name: Upload APK Artifact
@@ -35,3 +35,26 @@ jobs:
       with:
         name: sajada-debug-apk
         path: app/build/outputs/apk/debug/app-debug.apk
+
+    - name: Publish Release APK
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: v1.0.0-${{ github.run_number }}
+        name: "Sajada App v1.0.${{ github.run_number }}"
+        body: "Build otomatis terbaru aplikasi Absensi Jamaah 5 Waktu. Silakan download file APK di bawah ini."
+        files: app/build/outputs/apk/debug/app-debug.apk
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Update Latest Release Tag
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: latest
+        name: "Sajada App - Latest Build"
+        body: "Link unduhan permanen versi terbaru aplikasi Absensi Jamaah 5 Waktu."
+        files: app/build/outputs/apk/debug/app-debug.apk
+        prerelease: false
+        overwrite: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
