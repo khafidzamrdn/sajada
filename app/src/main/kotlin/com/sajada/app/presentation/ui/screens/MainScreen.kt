@@ -41,10 +41,6 @@ fun MainScreen(viewModel: AttendanceViewModel) {
             recapList = viewModel.getWeeklyRecap(),
             onBack = { viewModel.navigateTo(Screen.MAIN) }
         )
-        Screen.AI_ASSISTANT -> AiAssistantScreen(
-            viewModel = viewModel,
-            onBack = { viewModel.navigateTo(Screen.MAIN) }
-        )
     }
 }
 
@@ -72,7 +68,7 @@ fun MainDashboardContent(viewModel: AttendanceViewModel) {
             .fillMaxSize()
             .background(bgGradient)
     ) {
-        // Embedded app wallpaper
+        // Embedded app wallpaper with crystal clear frosted overlay (not black, clear & blurred style)
         Image(
             painter = painterResource(id = R.drawable.app_wallpaper),
             contentDescription = null,
@@ -82,7 +78,7 @@ fun MainDashboardContent(viewModel: AttendanceViewModel) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.5f))
+                .background(Color.Black.copy(alpha = 0.2f)) // Crystal clear bening effect
         )
 
         Scaffold(
@@ -100,19 +96,11 @@ fun MainDashboardContent(viewModel: AttendanceViewModel) {
                             Text(
                                 "Masjid Al-Ikhlas • 5 Waktu",
                                 fontSize = 14.sp,
-                                color = Color.White.copy(alpha = 0.8f)
+                                color = Color.White.copy(alpha = 0.85f)
                             )
                         }
                     },
                     actions = {
-                        // AI Assistant Button
-                        IconButton(onClick = { viewModel.navigateTo(Screen.AI_ASSISTANT) }) {
-                            Icon(
-                                Icons.Default.Star,
-                                contentDescription = "Asisten AI Gemini",
-                                tint = Color(0xFFFFD700)
-                            )
-                        }
                         // Weekly Recap Button
                         IconButton(onClick = { viewModel.navigateTo(Screen.WEEKLY_RECAP) }) {
                             Icon(
@@ -163,7 +151,7 @@ fun MainDashboardContent(viewModel: AttendanceViewModel) {
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clip(RoundedCornerShape(16.dp))
-                                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                                    .background(Color.White.copy(alpha = 0.15f))
                                     .padding(4.dp),
                                 horizontalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
@@ -349,7 +337,7 @@ fun BluetoothStatusCard(
         }
 
         if (isConnected) {
-            Divider(color = Color.White.copy(alpha = 0.2f))
+            Divider(color = Color.White.copy(alpha = 0.25f))
             Text("Simulasi Hardware Scanner:", fontWeight = FontWeight.SemiBold, fontSize = 13.sp, color = Color.White)
 
             Row(

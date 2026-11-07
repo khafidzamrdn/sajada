@@ -21,16 +21,17 @@ fun GlassCard(
     content: @Composable BoxScope.() -> Unit
 ) {
     val isDark = isSystemInDarkTheme()
+    // Crystal clear frosted glass effect ("bening dengan efek blurr")
     val backgroundColor = if (isDark) {
-        Color(0xFF242424).copy(alpha = 0.65f)
+        Color(0xFF202020).copy(alpha = 0.35f)
     } else {
-        Color(0xFFFFFFFF).copy(alpha = 0.75f)
+        Color(0xFFFFFFFF).copy(alpha = 0.35f)
     }
 
     val borderColor = if (isDark) {
-        Color.White.copy(alpha = 0.12f)
+        Color.White.copy(alpha = 0.25f)
     } else {
-        Color.White.copy(alpha = 0.5f)
+        Color.White.copy(alpha = 0.55f)
     }
 
     val shape = RoundedCornerShape(cornerRadius)
@@ -42,8 +43,8 @@ fun GlassCard(
             shape = shape,
             color = backgroundColor,
             tonalElevation = elevation,
-            shadowElevation = 4.dp,
-            border = BorderStroke(1.dp, borderColor)
+            shadowElevation = 8.dp,
+            border = BorderStroke(1.2.dp, borderColor)
         ) {
             Box(content = content)
         }
@@ -53,8 +54,8 @@ fun GlassCard(
             shape = shape,
             color = backgroundColor,
             tonalElevation = elevation,
-            shadowElevation = 4.dp,
-            border = BorderStroke(1.dp, borderColor)
+            shadowElevation = 8.dp,
+            border = BorderStroke(1.2.dp, borderColor)
         ) {
             Box(content = content)
         }
