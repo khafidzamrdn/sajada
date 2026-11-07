@@ -1,5 +1,6 @@
 package com.sajada.app.presentation.ui.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
@@ -16,9 +17,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.sajada.app.R
 import com.sajada.app.domain.model.*
 import com.sajada.app.presentation.ui.components.GlassCard
 import com.sajada.app.presentation.ui.components.OneUi7PillWidget
@@ -70,10 +74,10 @@ fun MainDashboardContent(viewModel: AttendanceViewModel) {
     ) {
         // Embedded app wallpaper
         Image(
-            painter = androidx.compose.ui.res.painterResource(id = com.sajada.app.R.drawable.app_wallpaper),
+            painter = painterResource(id = R.drawable.app_wallpaper),
             contentDescription = null,
             modifier = Modifier.fillMaxSize(),
-            contentScale = androidx.compose.ui.layout.ContentScale.Crop
+            contentScale = ContentScale.Crop
         )
         Box(
             modifier = Modifier
@@ -104,7 +108,7 @@ fun MainDashboardContent(viewModel: AttendanceViewModel) {
                         // AI Assistant Button
                         IconButton(onClick = { viewModel.navigateTo(Screen.AI_ASSISTANT) }) {
                             Icon(
-                                Icons.Default.AutoAwesome,
+                                Icons.Default.Star,
                                 contentDescription = "Asisten AI Gemini",
                                 tint = Color(0xFFFFD700)
                             )
@@ -112,7 +116,7 @@ fun MainDashboardContent(viewModel: AttendanceViewModel) {
                         // Weekly Recap Button
                         IconButton(onClick = { viewModel.navigateTo(Screen.WEEKLY_RECAP) }) {
                             Icon(
-                                Icons.Default.Assessment,
+                                Icons.Default.BarChart,
                                 contentDescription = "Rekap Mingguan",
                                 tint = Color(0xFF00E676)
                             )

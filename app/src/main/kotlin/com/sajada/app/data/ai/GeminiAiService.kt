@@ -15,7 +15,7 @@ class GeminiAiService(private var apiKey: String = "") {
 
     suspend fun askGemini(prompt: String, appDataContext: String): String = withContext(Dispatchers.IO) {
         if (apiKey.isEmpty()) {
-            return@withContext "Error: API Key Gemini belum diatur. Silakan masukkan API Key Anda melalui tombol pengaturan AI."
+            return@withContext "Error: API Key Gemini belum diatur. Silakan masukkan API Key Anda melalui tombol pengaturan AI di pojok kanan atas."
         }
 
         try {
@@ -32,8 +32,7 @@ class GeminiAiService(private var apiKey: String = "") {
             val systemPrompt = "Anda adalah asisten AI cerdas untuk Aplikasi Absensi Jamaah 5 Waktu (Sajada). Berikut adalah data real-time aplikasi saat ini:\n$appDataContext\n\nJawablah pertanyaan pengguna dengan ramah, akurat, dan berdasarkan data di atas."
             val fullPrompt = "$systemPrompt\n\nPertanyaan Pengguna: $prompt"
 
-            // Construct JSON payload safely without external gson library
-            val escapedPrompt = fullPrompt.replace("\"", "\\\"").replace("\n", "\\n")
+            val escapedPrompt = fullPrompt.replace("\"", "\\\"").replace("\n", "\\n").replace("\r", "")
             val jsonBody = """
                 {
                   "contents": [
@@ -54,21 +53,22 @@ class GeminiAiService(private var apiKey: String = "") {
             if (responseCode == HttpURLConnection.HTTP_OK) {
                 val responseStream = BufferedReader(InputStreamReader(connection.inputStream))
                 val responseStr = StringBuilder()
-                var line: String?
-                while (responseStream.readLine().also { line = line } != null) {
+                var line = responseStream.readLine()
+                while (line != null) {
                     responseStr.append(line)
+                    line = responseStream.readLine()
                 }
                 responseStream.close()
 
-                // Simple JSON extraction for text response
                 val raw = responseStr.toString()
                 return@withContext parseGeminiResponse(raw)
             } else {
                 val errorStream = BufferedReader(InputStreamReader(connection.errorStream ?: connection.inputStream))
                 val errStr = StringBuilder()
-                var line: String?
-                while (errorStream.readLine().also { line = line } != null) {
+                var line = errorStream.readLine()
+                while (line != null) {
                     errStr.append(line)
+                    line = errorStream.readLine()
                 }
                 return@withContext "Gagal menghubungi Gemini API (HTTP $responseCode): ${errStr.toString().take(200)}"
             }
@@ -79,7 +79,6 @@ class GeminiAiService(private var apiKey: String = "") {
 
     private fun parseGeminiResponse(json: String): String {
         try {
-            // Extract text field from standard Gemini JSON response structure using string indexing / regex
             val textMarker = "\"text\": \""
             val startIndex = json.indexOf(textMarker)
             if (startIndex != -1) {
