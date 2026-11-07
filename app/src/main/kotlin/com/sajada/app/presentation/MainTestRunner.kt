@@ -110,7 +110,7 @@ fun main() = runBlocking {
     val job = CoroutineScope(Dispatchers.Default).launch {
         bluetoothManager.listenScanEvents().collect { scanEvent ->
             try {
-                val autoLog = processFingerprintScanUseCase.execute(scanEvent, jadwalHariIni)
+                val autoLog = processFingerprintUseCase.execute(scanEvent, jadwalHariIni)
                 println("-> [Processor Event] Auto Attendance Recorded:")
                 println("     * Nama   : ${autoLog.namaJamaah} (ID: ${autoLog.jamaahId})")
                 println("     * Shalat : ${autoLog.waktuShalat}")
