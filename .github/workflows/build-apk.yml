@@ -60,6 +60,6 @@ jobs:
         body: "Link unduhan permanen versi terbaru aplikasi Absensi Jamaah 5 Waktu."
         files: app/build/outputs/apk/debug/app-debug.apk
         prerelease: false
-        overwrite: true
+        overwrite_files: true
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
