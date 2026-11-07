@@ -116,7 +116,7 @@ fun MainDashboardContent(viewModel: AttendanceViewModel) {
                         // Weekly Recap Button
                         IconButton(onClick = { viewModel.navigateTo(Screen.WEEKLY_RECAP) }) {
                             Icon(
-                                Icons.Default.BarChart,
+                                Icons.Default.DateRange,
                                 contentDescription = "Rekap Mingguan",
                                 tint = Color(0xFF00E676)
                             )
