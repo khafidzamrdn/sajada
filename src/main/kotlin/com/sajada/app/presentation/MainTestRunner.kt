@@ -6,6 +6,7 @@ import com.sajada.app.data.repository.InMemoryJamaahRepository
 import com.sajada.app.domain.model.JadwalShalatHariIni
 import com.sajada.app.domain.model.Jamaah
 import com.sajada.app.domain.model.WaktuShalat
+import com.sajada.app.domain.usecase.AddJamaahUseCase
 import com.sajada.app.domain.usecase.AttendanceEvaluatorUseCase
 import com.sajada.app.domain.usecase.ProcessFingerprintScanUseCase
 import com.sajada.app.domain.usecase.RecordManualAttendanceUseCase
@@ -18,11 +19,11 @@ import java.util.Calendar
 import java.util.Locale
 
 fun main() = runBlocking {
-    println("========================================================")
-    println("  ANDROID APP ARCHITECTURE & CORE LOGIC: ABSENSI JAMAAH  ")
-    println("========================================================\n")
+    println("=======================================================================")
+    println("  ANDROID APP ARCHITECTURE & CORE LOGIC: ABSENSI JAMAAH 5 WAKTU      ")
+    println("=======================================================================\n")
 
-    // 1. Inisialisasi Repositori In-Memory & Mock Data Jamaah
+    // 1. Inisialisasi Repositori In-Memory & Mock Data Jamaah Awal
     val initialJamaahs = listOf(
         Jamaah(id = "JM-001", nama = "Ahmad Fauzi (Admin)", fingerprintId = "FP-1001"),
         Jamaah(id = "JM-002", nama = "Siti Aminah (Jamaah)", fingerprintId = "FP-1002"),
@@ -33,10 +34,11 @@ fun main() = runBlocking {
 
     // 2. Inisialisasi Use Cases & Evaluator
     val evaluatorUseCase = AttendanceEvaluatorUseCase()
+    val addJamaahUseCase = AddJamaahUseCase(jamaahRepository)
     val recordManualUseCase = RecordManualAttendanceUseCase(jamaahRepository, attendanceRepository, evaluatorUseCase)
     val processFingerprintUseCase = ProcessFingerprintScanUseCase(jamaahRepository, attendanceRepository, evaluatorUseCase)
 
-    // 3. Inisialisasi Jadwal Shalat Hari Ini (Misal: Dzuhur pukul 12:00)
+    // 3. Inisialisasi Jadwal Shalat Hari Ini (Dzuhur pukul 12:00)
     val todayDateStr = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Calendar.getInstance().time)
     val jadwalHariIni = JadwalShalatHariIni(
         tanggal = todayDateStr,
@@ -66,6 +68,20 @@ fun main() = runBlocking {
         }
         return cal.timeInMillis
     }
+
+    // --- FITUR BARU: Penambahan Anggota Jamaah Secara Manual ---
+    println("--- SCENARIO 0: PENAMBAHAN ANGGOTA JAMAAH BARU (MANUAL) ---")
+    val newMember = addJamaahUseCase.execute(
+        id = "JM-004",
+        nama = "Fatimah Zahra",
+        fingerprintId = "FP-1004"
+    )
+    println("✓ Berhasil Menambahkan Anggota Baru:")
+    println("  -> ID           : ${newMember.id}")
+    println("  -> Nama         : ${newMember.nama}")
+    println("  -> Fingerprint  : ${newMember.fingerprintId}")
+    println("Total Anggota Terdaftar Saat Ini: ${jamaahRepository.getAll().size}")
+    println()
 
     // --- A. Eksekusi Absensi MANUAL untuk Jamaah A (Ahmad Fauzi - JM-001) ---
     println("--- SCENARIO A: ABSENSI MANUAL (Admin Input) ---")
@@ -106,16 +122,20 @@ fun main() = runBlocking {
         }
     }
 
-    // Simulasi Scan 1: Siti Aminah (FP-1002) pada Dzuhur + 12 menit (Tepat Waktu)
-    println("\n[Simulasi Hardware] Siti Aminah melakukan scan jari...")
-    bluetoothManager.simulateFingerprintScan("FP-1002", getDzuhurEpochWithOffset(12))
+    // Simulasi Scan 1: Siti Aminah (FP-1002) pada Dzuhur + 10 menit (Tepat Waktu)
+    println("\n[Simulasi Hardware] Siti Aminah (FP-1002) melakukan scan jari...")
+    bluetoothManager.simulateFingerprintScan("FP-1002", getDzuhurEpochWithOffset(10))
 
-    // Simulasi Scan 2: Umar Faruq (FP-1003) pada Dzuhur + 25 menit (Terlambat)
-    println("\n[Simulasi Hardware] Umar Faruq melakukan scan jari...")
+    // Simulasi Scan 2: Fatimah Zahra (Anggota Baru FP-1004) pada Dzuhur + 14 menit (Tepat Waktu)
+    println("\n[Simulasi Hardware] Fatimah Zahra / Anggota Baru (FP-1004) melakukan scan jari...")
+    bluetoothManager.simulateFingerprintScan("FP-1004", getDzuhurEpochWithOffset(14))
+
+    // Simulasi Scan 3: Umar Faruq (FP-1003) pada Dzuhur + 25 menit (Terlambat)
+    println("\n[Simulasi Hardware] Umar Faruq (FP-1003) melakukan scan jari...")
     bluetoothManager.simulateFingerprintScan("FP-1003", getDzuhurEpochWithOffset(25))
 
     // Beri sedikit jeda untuk coroutine event processing lalu putus koneksi
-    kotlinx.coroutines.delay(100)
+    kotlinx.coroutines.delay(120)
     job.cancel()
     bluetoothManager.disconnect()
     println()
@@ -128,7 +148,7 @@ fun main() = runBlocking {
         println("  [${index + 1}] ${log.namaJamaah} | ${log.waktuShalat} | Status: ${log.status} | Mode: ${log.mode}")
     }
 
-    println("\n========================================================")
-    println("  SEMUA SKENARIO ARSITEKTUR KOTLIN BERHASIL DIEKSEKUSI!  ")
-    println("========================================================")
+    println("\n=======================================================================")
+    println("  SEMUA SKENARIO & PENAMBAHAN ANGGOTA BARU BERHASIL DIEKSEKUSI!      ")
+    println("=======================================================================")
 }
