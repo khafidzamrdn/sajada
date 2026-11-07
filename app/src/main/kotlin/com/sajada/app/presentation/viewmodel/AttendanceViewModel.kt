@@ -43,6 +43,9 @@ class AttendanceViewModel : ViewModel() {
 
     val attendanceLogs: StateFlow<List<LogAbsensi>> = attendanceRepo.attendanceLogs
 
+    private val _latestAttendanceEvent = MutableStateFlow<LogAbsensi?>(null)
+    val latestAttendanceEvent: StateFlow<LogAbsensi?> = _latestAttendanceEvent.asStateFlow()
+
     private val _isManageJamaahOpen = MutableStateFlow(false)
     val isManageJamaahOpen: StateFlow<Boolean> = _isManageJamaahOpen.asStateFlow()
 
@@ -63,7 +66,8 @@ class AttendanceViewModel : ViewModel() {
 
     init {
         try {
-            recordManualUseCase.execute("JM-001", WaktuShalat.DZUHUR, jadwalHariIni, System.currentTimeMillis())
+            val initialLog = recordManualUseCase.execute("JM-001", WaktuShalat.DZUHUR, jadwalHariIni, System.currentTimeMillis())
+            _latestAttendanceEvent.value = initialLog
         } catch (_: Exception) {}
     }
 
@@ -104,7 +108,8 @@ class AttendanceViewModel : ViewModel() {
     }
 
     fun recordManual(jamaahId: String, waktuShalat: WaktuShalat) {
-        recordManualUseCase.execute(jamaahId, waktuShalat, jadwalHariIni, System.currentTimeMillis())
+        val log = recordManualUseCase.execute(jamaahId, waktuShalat, jadwalHariIni, System.currentTimeMillis())
+        _latestAttendanceEvent.value = log
     }
 
     fun simulateFingerprint(fingerprintId: String) {
@@ -115,7 +120,8 @@ class AttendanceViewModel : ViewModel() {
                     _isBluetoothConnected.value = true
                 }
                 val event = FingerprintScanEvent(rawFingerprintId = fingerprintId, timestamp = System.currentTimeMillis())
-                processFingerprintUseCase.execute(event, jadwalHariIni)
+                val log = processFingerprintUseCase.execute(event, jadwalHariIni)
+                _latestAttendanceEvent.value = log
             } catch (_: Exception) {}
         }
     }

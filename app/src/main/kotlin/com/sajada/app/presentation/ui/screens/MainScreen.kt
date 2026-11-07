@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sajada.app.domain.model.*
 import com.sajada.app.presentation.ui.components.GlassCard
+import com.sajada.app.presentation.ui.components.OneUi7PillWidget
 import com.sajada.app.presentation.viewmodel.AttendanceViewModel
 import java.text.SimpleDateFormat
 import java.util.*
@@ -35,6 +36,7 @@ fun MainScreen(viewModel: AttendanceViewModel) {
     val logs by viewModel.attendanceLogs.collectAsState()
     val isManageOpen by viewModel.isManageJamaahOpen.collectAsState()
     val editingLog by viewModel.editingLog.collectAsState()
+    val latestLog by viewModel.latestAttendanceEvent.collectAsState()
 
     val isDark = isSystemInDarkTheme()
     val bgGradient = if (isDark) {
@@ -89,6 +91,18 @@ fun MainScreen(viewModel: AttendanceViewModel) {
                     .padding(horizontal = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
+                // 0. One UI 7 Dynamic Pill Widget
+                item {
+                    OneUi7PillWidget(
+                        selectedMode = mode,
+                        isBtConnected = isBtConnected,
+                        deviceName = btDeviceName,
+                        latestLog = latestLog,
+                        onSwitchMode = { newMode -> viewModel.setMode(newMode) },
+                        onToggleBluetooth = { viewModel.toggleBluetoothConnection() }
+                    )
+                }
+
                 // 1. Mode Selector & Bluetooth / Manual Section
                 item {
                     GlassCard(modifier = Modifier.fillMaxWidth()) {
