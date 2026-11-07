@@ -55,6 +55,7 @@ dependencies {
     implementation("com.google.android.material:material:1.11.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
+    implementation("androidx.security:security-crypto:1.1.0-alpha06")
 
     // Jetpack Compose BOM
     val composeBom = platform("androidx.compose:compose-bom:2023.10.01")
