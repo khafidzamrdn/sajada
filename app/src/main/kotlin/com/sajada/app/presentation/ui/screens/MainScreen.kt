@@ -51,7 +51,6 @@ fun MainScreen(viewModel: AttendanceViewModel) {
         Scaffold(
             containerColor = Color.Transparent,
             topBar = {
-                // One UI Header
                 LargeTopAppBar(
                     title = {
                         Column {
@@ -71,7 +70,7 @@ fun MainScreen(viewModel: AttendanceViewModel) {
                     actions = {
                         IconButton(onClick = { viewModel.setManageJamaahOpen(true) }) {
                             Icon(
-                                Icons.Default.People,
+                                Icons.Default.Person,
                                 contentDescription = "Kelola Jamaah",
                                 tint = MaterialTheme.colorScheme.primary
                             )
@@ -94,7 +93,6 @@ fun MainScreen(viewModel: AttendanceViewModel) {
                 item {
                     GlassCard(modifier = Modifier.fillMaxWidth()) {
                         Column(modifier = Modifier.padding(16.dp)) {
-                            // Toggle Mode Segmented Button
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -121,7 +119,6 @@ fun MainScreen(viewModel: AttendanceViewModel) {
 
                             Spacer(modifier = Modifier.height(16.dp))
 
-                            // Conditional Section based on Mode
                             if (mode == ModeAbsensi.AUTOMATIC_FINGERPRINT) {
                                 BluetoothStatusCard(
                                     isConnected = isBtConnected,
@@ -147,7 +144,7 @@ fun MainScreen(viewModel: AttendanceViewModel) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
-                        alignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
                             "Rekap Log Hari Ini",
@@ -250,9 +247,9 @@ fun BluetoothStatusCard(
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
-            alignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(alignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Box(
                     modifier = Modifier
                         .size(12.dp)
@@ -292,9 +289,8 @@ fun BluetoothStatusCard(
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
-                alignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                // Dropdown or list of jamaah fingerprint ids
                 var expanded by remember { mutableStateOf(false) }
                 val currentJamaah = jamaahList.find { it.fingerprintId == selectedFpId }
 
@@ -309,7 +305,7 @@ fun BluetoothStatusCard(
                     DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                         jamaahList.forEach { jamaah ->
                             DropdownMenuItem(
-                                text = { Text("${jamaah.nama} (${jamaah.fingerprintId ?: 'N/A'})") },
+                                text = { Text("${jamaah.nama} (${jamaah.fingerprintId ?: "N/A"})") },
                                 onClick = {
                                     if (jamaah.fingerprintId != null) {
                                         selectedFpId = jamaah.fingerprintId!!
@@ -326,7 +322,7 @@ fun BluetoothStatusCard(
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
-                    Icon(Icons.Default.Fingerprint, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Icon(Icons.Default.Lock, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(4.dp))
                     Text("Scan Jari")
                 }
@@ -350,14 +346,17 @@ fun ManualAttendanceForm(
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text("Form Absensi Manual (Admin)", fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
 
-        // Jamaah Selector
         Box(modifier = Modifier.fillMaxWidth()) {
             OutlinedButton(
                 onClick = { jamaahDropdownExpanded = true },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Text(selectedJamaahName)
                     Icon(Icons.Default.ArrowDropDown, contentDescription = null)
                 }
@@ -375,14 +374,17 @@ fun ManualAttendanceForm(
             }
         }
 
-        // Prayer Selector
         Box(modifier = Modifier.fillMaxWidth()) {
             OutlinedButton(
                 onClick = { prayerDropdownExpanded = true },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Text("Waktu Shalat: $selectedPrayer")
                     Icon(Icons.Default.ArrowDropDown, contentDescription = null)
                 }
@@ -437,10 +439,10 @@ fun AttendanceLogCard(
                 .fillMaxWidth()
                 .padding(16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
-            alignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Row(alignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(log.namaJamaah, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                     Surface(
                         color = statusColor.copy(alpha = 0.15f),
@@ -570,11 +572,11 @@ fun ManageJamaahDialog(
                                 .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
                                 .padding(8.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
-                            alignment = Alignment.CenterVertically
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
                             Column {
                                 Text(jamaah.nama, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                                Text("ID: ${jamaah.id} • FP: ${jamaah.fingerprintId ?: '-'}", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text("ID: ${jamaah.id} • FP: ${jamaah.fingerprintId ?: "-"}", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                             IconButton(onClick = { onDelete(jamaah.id) }) {
                                 Icon(Icons.Default.Delete, contentDescription = "Hapus", tint = Color(0xFFFF5252))
@@ -609,14 +611,17 @@ fun EditLogDialog(
         title = { Text("Edit Log Absensi: ${log.namaJamaah}") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                // Status Selector
                 Box(modifier = Modifier.fillMaxWidth()) {
                     OutlinedButton(
                         onClick = { statusExpanded = true },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp)
                     ) {
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
                             Text("Status: $selectedStatus")
                             Icon(Icons.Default.ArrowDropDown, contentDescription = null)
                         }
@@ -634,14 +639,17 @@ fun EditLogDialog(
                     }
                 }
 
-                // Prayer Selector
                 Box(modifier = Modifier.fillMaxWidth()) {
                     OutlinedButton(
                         onClick = { prayerExpanded = true },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp)
                     ) {
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
                             Text("Waktu Shalat: $selectedPrayer")
                             Icon(Icons.Default.ArrowDropDown, contentDescription = null)
                         }
