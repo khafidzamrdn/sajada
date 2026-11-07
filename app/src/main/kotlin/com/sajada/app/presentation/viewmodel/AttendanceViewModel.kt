@@ -2,6 +2,7 @@ package com.sajada.app.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sajada.app.data.ai.GeminiAiService
 import com.sajada.app.data.bluetooth.MockBluetoothFingerprintManagerImpl
 import com.sajada.app.data.repository.InMemoryAttendanceRepository
 import com.sajada.app.data.repository.InMemoryJamaahRepository
@@ -11,6 +12,10 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
+
+enum class Screen {
+    MAIN, WEEKLY_RECAP, AI_ASSISTANT
+}
 
 class AttendanceViewModel : ViewModel() {
 
@@ -26,7 +31,13 @@ class AttendanceViewModel : ViewModel() {
     private val addJamaahUseCase = AddJamaahUseCase(jamaahRepo)
     private val recordManualUseCase = RecordManualAttendanceUseCase(jamaahRepo, attendanceRepo, evaluator)
     private val processFingerprintUseCase = ProcessFingerprintScanUseCase(jamaahRepo, attendanceRepo, evaluator)
+    private val weeklyRecapUseCase = GenerateWeeklyRecapUseCase()
+    private val geminiService = GeminiAiService()
     private val bluetoothManager = MockBluetoothFingerprintManagerImpl()
+
+    // Navigation state
+    private val _currentScreen = MutableStateFlow(Screen.MAIN)
+    val currentScreen: StateFlow<Screen> = _currentScreen.asStateFlow()
 
     // UI States
     private val _selectedMode = MutableStateFlow(ModeAbsensi.MANUAL)
@@ -69,6 +80,10 @@ class AttendanceViewModel : ViewModel() {
             val initialLog = recordManualUseCase.execute("JM-001", WaktuShalat.DZUHUR, jadwalHariIni, System.currentTimeMillis())
             _latestAttendanceEvent.value = initialLog
         } catch (_: Exception) {}
+    }
+
+    fun navigateTo(screen: Screen) {
+        _currentScreen.value = screen
     }
 
     fun setMode(mode: ModeAbsensi) {
@@ -151,5 +166,30 @@ class AttendanceViewModel : ViewModel() {
 
     fun setManageJamaahOpen(isOpen: Boolean) {
         _isManageJamaahOpen.value = isOpen
+    }
+
+    fun getWeeklyRecap(): List<WeeklyRecapItem> {
+        return weeklyRecapUseCase.execute(jamaahRepo.getAll(), attendanceRepo.getAllLogs())
+    }
+
+    fun setGeminiApiKey(key: String) {
+        geminiService.setApiKey(key)
+    }
+
+    suspend fun askAi(prompt: String): String {
+        val jamaahs = jamaahRepo.getAll()
+        val logs = attendanceRepo.getAllLogs()
+        val recap = getWeeklyRecap()
+
+        val contextStr = buildString {
+            append("Daftar Jamaah (${jamaahs.size}):\n")
+            jamaahs.forEach { append("- ${it.nama} (ID: ${it.id}, FP: ${it.fingerprintId})\n") }
+            append("\nLog Absensi Terbaru (${logs.size}):\n")
+            logs.forEach { append("- ${it.namaJamaah} | Shalat: ${it.waktuShalat} | Status: ${it.status} | Mode: ${it.mode}\n") }
+            append("\nRekap Mingguan:\n")
+            recap.forEach { append("- ${it.nama}: Hadir ${it.hadirCount}x, Alfa ${it.alfaCount}x\n") }
+        }
+
+        return geminiService.askGemini(prompt, contextStr)
     }
 }

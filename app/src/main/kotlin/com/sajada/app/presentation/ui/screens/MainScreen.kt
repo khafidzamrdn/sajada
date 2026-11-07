@@ -23,16 +23,30 @@ import com.sajada.app.domain.model.*
 import com.sajada.app.presentation.ui.components.GlassCard
 import com.sajada.app.presentation.ui.components.OneUi7PillWidget
 import com.sajada.app.presentation.viewmodel.AttendanceViewModel
-import androidx.compose.foundation.Image
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
-import com.sajada.app.R
+import com.sajada.app.presentation.viewmodel.Screen
 import java.text.SimpleDateFormat
 import java.util.*
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(viewModel: AttendanceViewModel) {
+    val currentScreen by viewModel.currentScreen.collectAsState()
+
+    when (currentScreen) {
+        Screen.MAIN -> MainDashboardContent(viewModel = viewModel)
+        Screen.WEEKLY_RECAP -> WeeklyRecapScreen(
+            recapList = viewModel.getWeeklyRecap(),
+            onBack = { viewModel.navigateTo(Screen.MAIN) }
+        )
+        Screen.AI_ASSISTANT -> AiAssistantScreen(
+            viewModel = viewModel,
+            onBack = { viewModel.navigateTo(Screen.MAIN) }
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MainDashboardContent(viewModel: AttendanceViewModel) {
     val mode by viewModel.selectedMode.collectAsState()
     val isBtConnected by viewModel.isBluetoothConnected.collectAsState()
     val btDeviceName by viewModel.bluetoothDeviceName.collectAsState()
@@ -50,13 +64,16 @@ fun MainScreen(viewModel: AttendanceViewModel) {
     }
 
     Box(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
+            .background(bgGradient)
     ) {
+        // Embedded app wallpaper
         Image(
-            painter = painterResource(id = R.drawable.app_wallpaper),
+            painter = androidx.compose.ui.res.painterResource(id = com.sajada.app.R.drawable.app_wallpaper),
             contentDescription = null,
             modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.Crop
+            contentScale = androidx.compose.ui.layout.ContentScale.Crop
         )
         Box(
             modifier = Modifier
@@ -74,21 +91,38 @@ fun MainScreen(viewModel: AttendanceViewModel) {
                                 "Absensi Jamaah",
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 28.sp,
-                                color = MaterialTheme.colorScheme.onBackground
+                                color = Color.White
                             )
                             Text(
                                 "Masjid Al-Ikhlas • 5 Waktu",
                                 fontSize = 14.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                color = Color.White.copy(alpha = 0.8f)
                             )
                         }
                     },
                     actions = {
+                        // AI Assistant Button
+                        IconButton(onClick = { viewModel.navigateTo(Screen.AI_ASSISTANT) }) {
+                            Icon(
+                                Icons.Default.AutoAwesome,
+                                contentDescription = "Asisten AI Gemini",
+                                tint = Color(0xFFFFD700)
+                            )
+                        }
+                        // Weekly Recap Button
+                        IconButton(onClick = { viewModel.navigateTo(Screen.WEEKLY_RECAP) }) {
+                            Icon(
+                                Icons.Default.Assessment,
+                                contentDescription = "Rekap Mingguan",
+                                tint = Color(0xFF00E676)
+                            )
+                        }
+                        // Manage Jamaah Button
                         IconButton(onClick = { viewModel.setManageJamaahOpen(true) }) {
                             Icon(
                                 Icons.Default.Person,
                                 contentDescription = "Kelola Jamaah",
-                                tint = MaterialTheme.colorScheme.primary
+                                tint = Color.White
                             )
                         }
                     },
@@ -178,12 +212,12 @@ fun MainScreen(viewModel: AttendanceViewModel) {
                             "Rekap Log Hari Ini",
                             fontWeight = FontWeight.Bold,
                             fontSize = 18.sp,
-                            color = MaterialTheme.colorScheme.onBackground
+                            color = Color.White
                         )
                         Text(
                             "${logs.size} Kehadiran",
                             fontSize = 14.sp,
-                            color = MaterialTheme.colorScheme.primary,
+                            color = Color(0xFF00E676),
                             fontWeight = FontWeight.SemiBold
                         )
                     }
@@ -201,7 +235,7 @@ fun MainScreen(viewModel: AttendanceViewModel) {
                             ) {
                                 Text(
                                     "Belum ada absensi tercatat hari ini.",
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    color = Color.White.copy(alpha = 0.7f),
                                     fontSize = 14.sp
                                 )
                             }
@@ -247,7 +281,7 @@ fun MainScreen(viewModel: AttendanceViewModel) {
 @Composable
 fun ModeButton(title: String, selected: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
     val bg = if (selected) MaterialTheme.colorScheme.primary else Color.Transparent
-    val fg = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
+    val fg = if (selected) MaterialTheme.colorScheme.onPrimary else Color.White
 
     Surface(
         onClick = onClick,
@@ -289,12 +323,12 @@ fun BluetoothStatusCard(
                         if (isConnected) "Terhubung ke $deviceName" else "Bluetooth Terputus",
                         fontWeight = FontWeight.Bold,
                         fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = Color.White
                     )
                     Text(
                         if (isConnected) "Scanner siap menerima sinyal sidik jari" else "Ketuk Hubungkan untuk aktifkan scanner",
                         fontSize = 12.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = Color.White.copy(alpha = 0.7f)
                     )
                 }
             }
@@ -311,8 +345,8 @@ fun BluetoothStatusCard(
         }
 
         if (isConnected) {
-            Divider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-            Text("Simulasi Hardware Scanner:", fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+            Divider(color = Color.White.copy(alpha = 0.2f))
+            Text("Simulasi Hardware Scanner:", fontWeight = FontWeight.SemiBold, fontSize = 13.sp, color = Color.White)
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -328,7 +362,7 @@ fun BluetoothStatusCard(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp)
                     ) {
-                        Text(currentJamaah?.let { "${it.nama} (${it.fingerprintId})" } ?: "Pilih Jamaah")
+                        Text(currentJamaah?.let { "${it.nama} (${it.fingerprintId})" } ?: "Pilih Jamaah", color = Color.White)
                     }
                     DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                         jamaahList.forEach { jamaah ->
@@ -372,7 +406,7 @@ fun ManualAttendanceForm(
     val selectedJamaahName = jamaahList.find { it.id == selectedJamaahId }?.nama ?: "Pilih Jamaah"
 
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text("Form Absensi Manual (Admin)", fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+        Text("Form Absensi Manual (Admin)", fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = Color.White)
 
         Box(modifier = Modifier.fillMaxWidth()) {
             OutlinedButton(
@@ -385,8 +419,8 @@ fun ManualAttendanceForm(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(selectedJamaahName)
-                    Icon(Icons.Default.ArrowDropDown, contentDescription = null)
+                    Text(selectedJamaahName, color = Color.White)
+                    Icon(Icons.Default.ArrowDropDown, contentDescription = null, tint = Color.White)
                 }
             }
             DropdownMenu(expanded = jamaahDropdownExpanded, onDismissRequest = { jamaahDropdownExpanded = false }) {
@@ -413,8 +447,8 @@ fun ManualAttendanceForm(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("Waktu Shalat: $selectedPrayer")
-                    Icon(Icons.Default.ArrowDropDown, contentDescription = null)
+                    Text("Waktu Shalat: $selectedPrayer", color = Color.White)
+                    Icon(Icons.Default.ArrowDropDown, contentDescription = null, tint = Color.White)
                 }
             }
             DropdownMenu(expanded = prayerDropdownExpanded, onDismissRequest = { prayerDropdownExpanded = false }) {
@@ -471,9 +505,9 @@ fun AttendanceLogCard(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(log.namaJamaah, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                    Text(log.namaJamaah, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.White)
                     Surface(
-                        color = statusColor.copy(alpha = 0.15f),
+                        color = statusColor.copy(alpha = 0.25f),
                         shape = RoundedCornerShape(8.dp)
                     ) {
                         Text(
@@ -489,18 +523,18 @@ fun AttendanceLogCard(
                 Text(
                     "Waktu: ${log.waktuShalat} • Jam: $timeFormatted",
                     fontSize = 13.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = Color.White.copy(alpha = 0.8f)
                 )
                 Text(
                     "Mode: ${log.mode}",
                     fontSize = 11.sp,
-                    color = MaterialTheme.colorScheme.primary
+                    color = Color(0xFF98FBCB)
                 )
             }
 
             Box {
                 IconButton(onClick = { menuExpanded = true }) {
-                    Icon(Icons.Default.MoreVert, contentDescription = "Menu")
+                    Icon(Icons.Default.MoreVert, contentDescription = "Menu", tint = Color.White)
                 }
                 DropdownMenu(expanded = menuExpanded, onDismissRequest = { menuExpanded = false }) {
                     DropdownMenuItem(
