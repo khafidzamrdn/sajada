@@ -23,11 +23,10 @@ import com.sajada.app.domain.model.*
 import com.sajada.app.presentation.ui.components.GlassCard
 import com.sajada.app.presentation.ui.components.OneUi7PillWidget
 import com.sajada.app.presentation.viewmodel.AttendanceViewModel
-import android.graphics.BitmapFactory
 import androidx.compose.foundation.Image
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
-import java.io.File
+import androidx.compose.ui.res.painterResource
+import com.sajada.app.R
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -50,42 +49,20 @@ fun MainScreen(viewModel: AttendanceViewModel) {
         Brush.verticalGradient(listOf(Color(0xFFE0F2FE), Color(0xFFF1F5F9)))
     }
 
-    val customImagePath = "/storage/emulated/0/Pictures/IMG_74669443-adb9-4743-a1c6-59b4abba018c.jpg"
-    val customImageFile = File(customImagePath)
-    val customBitmap = remember(customImageFile.exists()) {
-        if (customImageFile.exists()) {
-            try {
-                BitmapFactory.decodeFile(customImageFile.absolutePath)
-            } catch (e: Exception) {
-                null
-            }
-        } else {
-            null
-        }
-    }
-
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
-        if (customBitmap != null) {
-            Image(
-                bitmap = customBitmap.asImageBitmap(),
-                contentDescription = null,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
-            )
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.5f))
-            )
-        } else {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(bgGradient)
-            )
-        }
+        Image(
+            painter = painterResource(id = R.drawable.app_wallpaper),
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.5f))
+        )
 
         Scaffold(
             containerColor = Color.Transparent,
