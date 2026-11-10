@@ -151,7 +151,7 @@ fun MainDashboardContent(viewModel: AttendanceViewModel) {
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clip(RoundedCornerShape(16.dp))
-                                    .background(Color.White.copy(alpha = 0.15f))
+                                    .background(Color(0xFFF1F3F5))
                                     .padding(4.dp),
                                 horizontalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
@@ -227,7 +227,7 @@ fun MainDashboardContent(viewModel: AttendanceViewModel) {
                             ) {
                                 Text(
                                     "Belum ada absensi tercatat hari ini.",
-                                    color = Color.White.copy(alpha = 0.7f),
+                                    color = Color(0xFF5F6368),
                                     fontSize = 14.sp
                                 )
                             }
@@ -273,7 +273,7 @@ fun MainDashboardContent(viewModel: AttendanceViewModel) {
 @Composable
 fun ModeButton(title: String, selected: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
     val bg = if (selected) MaterialTheme.colorScheme.primary else Color.Transparent
-    val fg = if (selected) MaterialTheme.colorScheme.onPrimary else Color.White
+    val fg = if (selected) MaterialTheme.colorScheme.onPrimary else Color(0xFF1A1A2E)
 
     Surface(
         onClick = onClick,
@@ -315,12 +315,12 @@ fun BluetoothStatusCard(
                         if (isConnected) "Terhubung ke $deviceName" else "Bluetooth Terputus",
                         fontWeight = FontWeight.Bold,
                         fontSize = 14.sp,
-                        color = Color.White
+                        color = Color(0xFF1A1A2E)
                     )
                     Text(
                         if (isConnected) "Scanner siap menerima sinyal sidik jari" else "Ketuk Hubungkan untuk aktifkan scanner",
                         fontSize = 12.sp,
-                        color = Color.White.copy(alpha = 0.7f)
+                        color = Color(0xFF5F6368)
                     )
                 }
             }
@@ -337,8 +337,8 @@ fun BluetoothStatusCard(
         }
 
         if (isConnected) {
-            Divider(color = Color.White.copy(alpha = 0.25f))
-            Text("Simulasi Hardware Scanner:", fontWeight = FontWeight.SemiBold, fontSize = 13.sp, color = Color.White)
+            Divider(color = Color(0xFFE0E0E0))
+            Text("Simulasi Hardware Scanner:", fontWeight = FontWeight.SemiBold, fontSize = 13.sp, color = Color(0xFF1A1A2E))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -354,7 +354,7 @@ fun BluetoothStatusCard(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp)
                     ) {
-                        Text(currentJamaah?.let { "${it.nama} (${it.fingerprintId})" } ?: "Pilih Jamaah", color = Color.White)
+                        Text(currentJamaah?.let { "${it.nama} (${it.fingerprintId})" } ?: "Pilih Jamaah", color = Color(0xFF1A1A2E))
                     }
                     DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                         jamaahList.forEach { jamaah ->
@@ -399,13 +399,13 @@ fun ManualAttendanceForm(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("Pilih Waktu Shalat:", fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = Color.White)
+            Text("Pilih Waktu Shalat:", fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = Color(0xFF1A1A2E))
             
             Box {
                 OutlinedButton(
                     onClick = { prayerDropdownExpanded = true },
                     shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFF1A1A2E))
                 ) {
                     Text(selectedPrayer.name)
                     Spacer(modifier = Modifier.width(4.dp))
@@ -425,12 +425,12 @@ fun ManualAttendanceForm(
             }
         }
 
-        Divider(color = Color.White.copy(alpha = 0.2f))
+        Divider(color = Color(0xFFE0E0E0))
 
-        Text("Daftar Jamaah & Quick Action Absensi:", fontWeight = FontWeight.SemiBold, fontSize = 13.sp, color = Color.White.copy(alpha = 0.9f))
+        Text("Daftar Jamaah & Quick Action Absensi:", fontWeight = FontWeight.SemiBold, fontSize = 13.sp, color = Color(0xFF1A1A2E))
 
         if (jamaahList.isEmpty()) {
-            Text("Belum ada anggota jamaah terdaftar.", color = Color.White.copy(alpha = 0.6f), fontSize = 13.sp)
+            Text("Belum ada anggota jamaah terdaftar.", color = Color(0xFF5F6368), fontSize = 13.sp)
         } else {
             jamaahList.forEach { jamaah ->
                 GlassCard(
@@ -449,8 +449,8 @@ fun ManualAttendanceForm(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Column {
-                                Text(jamaah.nama, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = Color.White)
-                                Text("ID: ${jamaah.id}", fontSize = 11.sp, color = Color.White.copy(alpha = 0.7f))
+                                Text(jamaah.nama, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = Color(0xFF1A1A2E))
+                                Text("ID: ${jamaah.id}", fontSize = 11.sp, color = Color(0xFF5F6368))
                             }
                         }
 
@@ -542,7 +542,7 @@ fun AttendanceLogCard(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(log.namaJamaah, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.White)
+                    Text(log.namaJamaah, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color(0xFF1A1A2E))
                     Surface(
                         color = statusColor.copy(alpha = 0.25f),
                         shape = RoundedCornerShape(8.dp)
@@ -560,18 +560,18 @@ fun AttendanceLogCard(
                 Text(
                     "Waktu: ${log.waktuShalat} • Jam: $timeFormatted",
                     fontSize = 13.sp,
-                    color = Color.White.copy(alpha = 0.8f)
+                    color = Color(0xFF5F6368)
                 )
                 Text(
                     "Mode: ${log.mode}",
                     fontSize = 11.sp,
-                    color = Color(0xFF98FBCB)
+                    color = Color(0xFF00875A)
                 )
             }
 
             Box {
                 IconButton(onClick = { menuExpanded = true }) {
-                    Icon(Icons.Default.MoreVert, contentDescription = "Menu", tint = Color.White)
+                    Icon(Icons.Default.MoreVert, contentDescription = "Menu", tint = Color(0xFF1A1A2E))
                 }
                 DropdownMenu(expanded = menuExpanded, onDismissRequest = { menuExpanded = false }) {
                     DropdownMenuItem(

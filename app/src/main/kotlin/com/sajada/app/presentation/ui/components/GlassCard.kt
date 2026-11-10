@@ -1,7 +1,6 @@
 package com.sajada.app.presentation.ui.components
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -20,20 +19,9 @@ fun GlassCard(
     onClick: (() -> Unit)? = null,
     content: @Composable BoxScope.() -> Unit
 ) {
-    val isDark = isSystemInDarkTheme()
-    // Crystal clear frosted glass effect ("bening dengan efek blurr")
-    val backgroundColor = if (isDark) {
-        Color(0xFF202020).copy(alpha = 0.35f)
-    } else {
-        Color(0xFFFFFFFF).copy(alpha = 0.35f)
-    }
-
-    val borderColor = if (isDark) {
-        Color.White.copy(alpha = 0.25f)
-    } else {
-        Color.White.copy(alpha = 0.55f)
-    }
-
+    // Solid white card with a soft drop shadow for a clean 3D elevation effect
+    val backgroundColor = Color.White
+    val borderColor = Color(0xFFEAEAEA)
     val shape = RoundedCornerShape(cornerRadius)
 
     if (onClick != null) {
@@ -43,8 +31,8 @@ fun GlassCard(
             shape = shape,
             color = backgroundColor,
             tonalElevation = elevation,
-            shadowElevation = 8.dp,
-            border = BorderStroke(1.2.dp, borderColor)
+            shadowElevation = 12.dp,
+            border = BorderStroke(1.dp, borderColor)
         ) {
             Box(content = content)
         }
@@ -54,8 +42,8 @@ fun GlassCard(
             shape = shape,
             color = backgroundColor,
             tonalElevation = elevation,
-            shadowElevation = 8.dp,
-            border = BorderStroke(1.2.dp, borderColor)
+            shadowElevation = 12.dp,
+            border = BorderStroke(1.dp, borderColor)
         ) {
             Box(content = content)
         }
