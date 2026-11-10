@@ -26,6 +26,7 @@ import com.sajada.app.R
 import com.sajada.app.domain.model.*
 import com.sajada.app.presentation.ui.components.GlassCard
 import com.sajada.app.presentation.ui.components.OneUi7PillWidget
+import com.sajada.app.presentation.ui.components.SajadaBottomNavBar
 import com.sajada.app.presentation.viewmodel.AttendanceViewModel
 import com.sajada.app.presentation.viewmodel.Screen
 import java.text.SimpleDateFormat
@@ -34,13 +35,72 @@ import java.util.*
 @Composable
 fun MainScreen(viewModel: AttendanceViewModel) {
     val currentScreen by viewModel.currentScreen.collectAsState()
+    val isManageOpen by viewModel.isManageJamaahOpen.collectAsState()
+    val editingLog by viewModel.editingLog.collectAsState()
+    val jamaahList by viewModel.jamaahList.collectAsState()
 
-    when (currentScreen) {
-        Screen.MAIN -> MainDashboardContent(viewModel = viewModel)
-        Screen.WEEKLY_RECAP -> WeeklyRecapScreen(
-            recapList = viewModel.getWeeklyRecap(),
-            onBack = { viewModel.navigateTo(Screen.MAIN) }
-        )
+    val isDark = isSystemInDarkTheme()
+    val bgGradient = if (isDark) {
+        Brush.verticalGradient(listOf(Color(0xFF0F172A), Color(0xFF1E293B)))
+    } else {
+        Brush.verticalGradient(listOf(Color(0xFFE0F2FE), Color(0xFFF1F5F9)))
+    }
+
+    Scaffold(
+        containerColor = Color.Transparent,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
+        bottomBar = {
+            SajadaBottomNavBar(
+                currentScreen = currentScreen,
+                onSelect = { viewModel.navigateTo(it) }
+            )
+        }
+    ) { innerPadding ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(bgGradient)
+                .padding(bottom = innerPadding.calculateBottomPadding())
+        ) {
+            // Embedded app wallpaper with crystal clear frosted overlay
+            Image(
+                painter = painterResource(id = R.drawable.app_wallpaper),
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
+            )
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.2f))
+            )
+
+            when (currentScreen) {
+                Screen.DASHBOARD -> MainDashboardContent(viewModel = viewModel)
+                Screen.JADWAL -> JadwalScreen(viewModel = viewModel)
+                Screen.ABSENSI -> AbsensiScreen(viewModel = viewModel)
+                Screen.REKAP -> WeeklyRecapScreen(recapList = viewModel.getWeeklyRecap())
+                Screen.JAMAAH -> JamaahScreen(viewModel = viewModel)
+            }
+
+            // Global dialogs available from any page
+            if (isManageOpen) {
+                ManageJamaahDialog(
+                    jamaahList = jamaahList,
+                    onDismiss = { viewModel.setManageJamaahOpen(false) },
+                    onAdd = { name, fp -> viewModel.addJamaah(name, fp) },
+                    onDelete = { id -> viewModel.removeJamaah(id) }
+                )
+            }
+
+            if (editingLog != null) {
+                EditLogDialog(
+                    log = editingLog!!,
+                    onDismiss = { viewModel.setEditingLog(null) },
+                    onSave = { logId, status, prayer -> viewModel.updateLog(logId, status, prayer) }
+                )
+            }
+        }
     }
 }
 
@@ -52,78 +112,43 @@ fun MainDashboardContent(viewModel: AttendanceViewModel) {
     val btDeviceName by viewModel.bluetoothDeviceName.collectAsState()
     val jamaahList by viewModel.jamaahList.collectAsState()
     val logs by viewModel.attendanceLogs.collectAsState()
-    val isManageOpen by viewModel.isManageJamaahOpen.collectAsState()
-    val editingLog by viewModel.editingLog.collectAsState()
     val latestLog by viewModel.latestAttendanceEvent.collectAsState()
 
-    val isDark = isSystemInDarkTheme()
-    val bgGradient = if (isDark) {
-        Brush.verticalGradient(listOf(Color(0xFF0F172A), Color(0xFF1E293B)))
-    } else {
-        Brush.verticalGradient(listOf(Color(0xFFE0F2FE), Color(0xFFF1F5F9)))
-    }
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(bgGradient)
-    ) {
-        // Embedded app wallpaper with crystal clear frosted overlay (not black, clear & blurred style)
-        Image(
-            painter = painterResource(id = R.drawable.app_wallpaper),
-            contentDescription = null,
-            modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.Crop
-        )
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.2f)) // Crystal clear bening effect
-        )
-
-        Scaffold(
-            containerColor = Color.Transparent,
-            topBar = {
-                LargeTopAppBar(
-                    title = {
-                        Column {
-                            Text(
-                                "Absensi Jamaah",
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 28.sp,
-                                color = Color.White
-                            )
-                            Text(
-                                "Masjid Al-Ikhlas • 5 Waktu",
-                                fontSize = 14.sp,
-                                color = Color.White.copy(alpha = 0.85f)
-                            )
-                        }
-                    },
-                    actions = {
-                        // Weekly Recap Button
-                        IconButton(onClick = { viewModel.navigateTo(Screen.WEEKLY_RECAP) }) {
-                            Icon(
-                                Icons.Default.DateRange,
-                                contentDescription = "Rekap Mingguan",
-                                tint = Color(0xFF00E676)
-                            )
-                        }
-                        // Manage Jamaah Button
-                        IconButton(onClick = { viewModel.setManageJamaahOpen(true) }) {
-                            Icon(
-                                Icons.Default.Person,
-                                contentDescription = "Kelola Jamaah",
-                                tint = Color.White
-                            )
-                        }
-                    },
-                    colors = TopAppBarDefaults.largeTopAppBarColors(
-                        containerColor = Color.Transparent
-                    )
+    Scaffold(
+        containerColor = Color.Transparent,
+        topBar = {
+            LargeTopAppBar(
+                title = {
+                    Column {
+                        Text(
+                            "Absensi Jamaah",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 28.sp,
+                            color = Color.White
+                        )
+                        Text(
+                            "Masjid Al-Ikhlas • 5 Waktu",
+                            fontSize = 14.sp,
+                            color = Color.White.copy(alpha = 0.85f)
+                        )
+                    }
+                },
+                actions = {
+                    // Add Jamaah Button
+                    IconButton(onClick = { viewModel.setManageJamaahOpen(true) }) {
+                        Icon(
+                            Icons.Default.Add,
+                            contentDescription = "Tambah Jamaah",
+                            tint = Color.White
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.largeTopAppBarColors(
+                    containerColor = Color.Transparent
                 )
-            }
-        ) { padding ->
+            )
+        }
+    ) { padding ->
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
@@ -248,26 +273,6 @@ fun MainDashboardContent(viewModel: AttendanceViewModel) {
                 }
             }
         }
-
-        // Manage Jamaah Dialog
-        if (isManageOpen) {
-            ManageJamaahDialog(
-                jamaahList = jamaahList,
-                onDismiss = { viewModel.setManageJamaahOpen(false) },
-                onAdd = { name, fp -> viewModel.addJamaah(name, fp) },
-                onDelete = { id -> viewModel.removeJamaah(id) }
-            )
-        }
-
-        // Edit Log Dialog
-        if (editingLog != null) {
-            EditLogDialog(
-                log = editingLog!!,
-                onDismiss = { viewModel.setEditingLog(null) },
-                onSave = { logId, status, prayer -> viewModel.updateLog(logId, status, prayer) }
-            )
-        }
-    }
 }
 
 @Composable

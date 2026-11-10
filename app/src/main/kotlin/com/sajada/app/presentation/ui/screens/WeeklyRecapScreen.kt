@@ -21,8 +21,7 @@ import com.sajada.app.presentation.ui.components.GlassCard
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WeeklyRecapScreen(
-    recapList: List<WeeklyRecapItem>,
-    onBack: () -> Unit
+    recapList: List<WeeklyRecapItem>
 ) {
     var notificationSentDialog by remember { mutableStateOf(false) }
 
@@ -31,12 +30,10 @@ fun WeeklyRecapScreen(
         topBar = {
             TopAppBar(
                 title = { Text("Rekap Absensi 1 Minggu", fontWeight = FontWeight.Bold) },
-                navigationIcon = {
-                    TextButton(onClick = onBack) {
-                        Text("Kembali", color = MaterialTheme.colorScheme.primary)
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.Transparent,
+                    titleContentColor = Color.White
+                )
             )
         }
     ) { padding ->

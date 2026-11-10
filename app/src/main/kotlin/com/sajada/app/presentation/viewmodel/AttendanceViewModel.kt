@@ -15,7 +15,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 enum class Screen {
-    MAIN, WEEKLY_RECAP
+    DASHBOARD, JADWAL, ABSENSI, REKAP, JAMAAH
 }
 
 class AttendanceViewModel(application: Application) : AndroidViewModel(application) {
@@ -36,7 +36,7 @@ class AttendanceViewModel(application: Application) : AndroidViewModel(applicati
     private val bluetoothManager = MockBluetoothFingerprintManagerImpl()
 
     // Navigation state
-    private val _currentScreen = MutableStateFlow(Screen.MAIN)
+    private val _currentScreen = MutableStateFlow(Screen.DASHBOARD)
     val currentScreen: StateFlow<Screen> = _currentScreen.asStateFlow()
 
     // UI States
