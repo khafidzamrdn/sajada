@@ -524,6 +524,10 @@ fun AttendanceLogCard(
         StatusAbsensi.TEPAT_WAKTU -> Color(0xFF00C853)
         StatusAbsensi.TERLAMBAT -> Color(0xFFFFAB00)
         StatusAbsensi.DI_LUAR_JADWAL -> Color(0xFFFF5252)
+        StatusAbsensi.HADIR -> Color(0xFF00C853)
+        StatusAbsensi.SAKIT -> Color(0xFF29B6F6)
+        StatusAbsensi.IZIN -> Color(0xFFFFB300)
+        StatusAbsensi.TIDAK_HADIR -> Color(0xFFFF5252)
     }
 
     var menuExpanded by remember { mutableStateOf(false) }
