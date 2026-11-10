@@ -1,16 +1,20 @@
 package com.sajada.app.presentation.viewmodel
 
 import android.app.Application
+import android.content.Context
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.sajada.app.data.bluetooth.MockBluetoothFingerprintManagerImpl
 import com.sajada.app.data.local.SecureStorageManager
+import com.sajada.app.data.remote.PrayerTimesRemoteDataSource
 import com.sajada.app.data.repository.InMemoryAttendanceRepository
 import com.sajada.app.data.repository.InMemoryJamaahRepository
 import com.sajada.app.domain.model.*
 import com.sajada.app.domain.usecase.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -63,23 +67,68 @@ class AttendanceViewModel(application: Application) : AndroidViewModel(applicati
     private val _editingLog = MutableStateFlow<LogAbsensi?>(null)
     val editingLog: StateFlow<LogAbsensi?> = _editingLog.asStateFlow()
 
-    // Jadwal Shalat Hari Ini
-    val jadwalHariIni = JadwalShalatHariIni(
-        tanggal = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date()),
-        mapWaktu = mapOf(
-            WaktuShalat.SUBUH to "04:30",
-            WaktuShalat.DZUHUR to "12:00",
-            WaktuShalat.ASHAR to "15:15",
-            WaktuShalat.MAGHRIB to "18:00",
-            WaktuShalat.ISYA to "19:15"
+    // Jadwal Shalat Hari Ini (fallback offline, lalu diperbarui dari internet)
+    private val prayerTimesDataSource = PrayerTimesRemoteDataSource()
+
+    private val _jadwalHariIni = MutableStateFlow(
+        JadwalShalatHariIni(
+            tanggal = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date()),
+            mapWaktu = mapOf(
+                WaktuShalat.SUBUH to "04:30",
+                WaktuShalat.DZUHUR to "12:00",
+                WaktuShalat.ASHAR to "15:15",
+                WaktuShalat.MAGHRIB to "18:00",
+                WaktuShalat.ISYA to "19:15"
+            )
         )
     )
+    val jadwalHariIni: StateFlow<JadwalShalatHariIni> = _jadwalHariIni.asStateFlow()
+
+    private val _isJadwalLoading = MutableStateFlow(false)
+    val isJadwalLoading: StateFlow<Boolean> = _isJadwalLoading.asStateFlow()
+
+    private val _jadwalSource = MutableStateFlow("Jadwal lokal (offline)")
+    val jadwalSource: StateFlow<String> = _jadwalSource.asStateFlow()
+
+    // Tema terang / gelap
+    private val prefs = application.getSharedPreferences("sajada_prefs", Context.MODE_PRIVATE)
+    private val _isDarkTheme = MutableStateFlow(prefs.getBoolean("dark_theme", false))
+    val isDarkTheme: StateFlow<Boolean> = _isDarkTheme.asStateFlow()
+
+    private val _isThemeSettingsOpen = MutableStateFlow(false)
+    val isThemeSettingsOpen: StateFlow<Boolean> = _isThemeSettingsOpen.asStateFlow()
 
     init {
         try {
-            val initialLog = recordManualUseCase.execute("JM-001", WaktuShalat.DZUHUR, jadwalHariIni, System.currentTimeMillis())
+            val initialLog = recordManualUseCase.execute("JM-001", WaktuShalat.DZUHUR, _jadwalHariIni.value, System.currentTimeMillis())
             _latestAttendanceEvent.value = initialLog
         } catch (_: Exception) {}
+        refreshJadwalShalat()
+    }
+
+    fun refreshJadwalShalat() {
+        viewModelScope.launch {
+            _isJadwalLoading.value = true
+            val result = withContext(Dispatchers.IO) {
+                runCatching { prayerTimesDataSource.fetch() }
+            }
+            result.onSuccess { data ->
+                _jadwalHariIni.value = data.jadwal
+                _jadwalSource.value = "Sumber: ${data.source} • ${data.city}"
+            }.onFailure { error ->
+                _jadwalSource.value = "Gagal memuat jadwal online (${error.message ?: "koneksi"}). Memakai jadwal lokal."
+            }
+            _isJadwalLoading.value = false
+        }
+    }
+
+    fun setDarkTheme(enabled: Boolean) {
+        _isDarkTheme.value = enabled
+        prefs.edit().putBoolean("dark_theme", enabled).apply()
+    }
+
+    fun setThemeSettingsOpen(open: Boolean) {
+        _isThemeSettingsOpen.value = open
     }
 
     fun navigateTo(screen: Screen) {
@@ -123,12 +172,12 @@ class AttendanceViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     fun recordManual(jamaahId: String, waktuShalat: WaktuShalat) {
-        val log = recordManualUseCase.execute(jamaahId, waktuShalat, jadwalHariIni, System.currentTimeMillis())
+        val log = recordManualUseCase.execute(jamaahId, waktuShalat, _jadwalHariIni.value, System.currentTimeMillis())
         _latestAttendanceEvent.value = log
     }
 
     fun recordManualStatus(jamaahId: String, waktuShalat: WaktuShalat, status: StatusAbsensi) {
-        val baseLog = recordManualUseCase.execute(jamaahId, waktuShalat, jadwalHariIni, System.currentTimeMillis())
+        val baseLog = recordManualUseCase.execute(jamaahId, waktuShalat, _jadwalHariIni.value, System.currentTimeMillis())
         val updatedLog = baseLog.copy(status = status)
         val logs = attendanceRepo.getAllLogs().toMutableList()
         if (logs.isNotEmpty()) {
@@ -147,7 +196,7 @@ class AttendanceViewModel(application: Application) : AndroidViewModel(applicati
                     _isBluetoothConnected.value = true
                 }
                 val event = FingerprintScanEvent(rawFingerprintId = fingerprintId, timestamp = System.currentTimeMillis())
-                val log = processFingerprintUseCase.execute(event, jadwalHariIni)
+                val log = processFingerprintUseCase.execute(event, _jadwalHariIni.value)
                 _latestAttendanceEvent.value = log
             } catch (_: Exception) {}
         }

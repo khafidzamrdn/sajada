@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
@@ -49,8 +50,8 @@ fun SajadaBottomNavBar(
     onSelect: (Screen) -> Unit
 ) {
     NavigationBar(
-        containerColor = Color.White,
-        contentColor = GrayInactive,
+        containerColor = MaterialTheme.colorScheme.surface,
+        contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
         tonalElevation = 12.dp
     ) {
         bottomNavItems.forEach { item ->
@@ -87,8 +88,8 @@ fun SajadaBottomNavBar(
                     selectedIconColor = TealActive,
                     selectedTextColor = TealActive,
                     indicatorColor = TealActive.copy(alpha = 0.14f),
-                    unselectedIconColor = GrayInactive,
-                    unselectedTextColor = GrayInactive
+                    unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             )
         }

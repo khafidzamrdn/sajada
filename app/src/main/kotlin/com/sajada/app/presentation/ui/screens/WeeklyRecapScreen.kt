@@ -32,7 +32,7 @@ fun WeeklyRecapScreen(
                 title = { Text("Rekap Absensi 1 Minggu", fontWeight = FontWeight.Bold) },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.Transparent,
-                    titleContentColor = Color.White
+                    titleContentColor = MaterialTheme.colorScheme.onBackground
                 )
             )
         }

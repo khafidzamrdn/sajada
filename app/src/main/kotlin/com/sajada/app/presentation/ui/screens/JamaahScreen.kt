@@ -9,6 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -35,6 +36,13 @@ fun JamaahScreen(viewModel: AttendanceViewModel) {
             TopAppBar(
                 title = { Text("Daftar Jamaah", fontWeight = FontWeight.Bold) },
                 actions = {
+                    IconButton(onClick = { viewModel.setThemeSettingsOpen(true) }) {
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = "Pengaturan Tampilan",
+                            tint = MaterialTheme.colorScheme.onBackground
+                        )
+                    }
                     IconButton(onClick = { viewModel.setManageJamaahOpen(true) }) {
                         Icon(
                             imageVector = Icons.Default.Add,
@@ -45,7 +53,7 @@ fun JamaahScreen(viewModel: AttendanceViewModel) {
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.Transparent,
-                    titleContentColor = Color.White
+                    titleContentColor = MaterialTheme.colorScheme.onBackground
                 )
             )
         }
@@ -60,7 +68,7 @@ fun JamaahScreen(viewModel: AttendanceViewModel) {
             item {
                 Text(
                     "${jamaahList.size} jamaah terdaftar di Masjid Al-Ikhlas",
-                    color = Color.White.copy(alpha = 0.85f),
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
                     fontSize = 13.sp
                 )
             }
@@ -76,7 +84,7 @@ fun JamaahScreen(viewModel: AttendanceViewModel) {
                         ) {
                             Text(
                                 "Belum ada anggota jamaah terdaftar.",
-                                color = Color(0xFF5F6368),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 14.sp
                             )
                         }
@@ -115,12 +123,12 @@ fun JamaahScreen(viewModel: AttendanceViewModel) {
                                         text = jamaah.nama,
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 15.sp,
-                                        color = Color(0xFF1A1A2E)
+                                        color = MaterialTheme.colorScheme.onSurface
                                     )
                                     Text(
                                         text = "ID: ${jamaah.id} • FP: ${jamaah.fingerprintId ?: "-"}",
                                         fontSize = 11.sp,
-                                        color = Color(0xFF5F6368)
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 }
                             }
