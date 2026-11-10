@@ -1,5 +1,12 @@
 package com.sajada.app.presentation.ui.screens
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -75,12 +82,29 @@ fun MainScreen(viewModel: AttendanceViewModel) {
                     .background(Color.Black.copy(alpha = 0.2f))
             )
 
-            when (currentScreen) {
-                Screen.DASHBOARD -> MainDashboardContent(viewModel = viewModel)
-                Screen.JADWAL -> JadwalScreen(viewModel = viewModel)
-                Screen.ABSENSI -> AbsensiScreen(viewModel = viewModel)
-                Screen.REKAP -> WeeklyRecapScreen(recapList = viewModel.getWeeklyRecap())
-                Screen.JAMAAH -> JamaahScreen(viewModel = viewModel)
+            AnimatedContent(
+                targetState = currentScreen,
+                modifier = Modifier.fillMaxSize(),
+                transitionSpec = {
+                    val direction = if (targetState.ordinal > initialState.ordinal) 1 else -1
+                    (slideInHorizontally(
+                        animationSpec = tween(durationMillis = 380, easing = androidx.compose.animation.core.FastOutSlowInEasing)
+                    ) { fullWidth -> direction * fullWidth } + fadeIn(animationSpec = tween(280)))
+                        .togetherWith(
+                            slideOutHorizontally(
+                                animationSpec = tween(durationMillis = 380, easing = androidx.compose.animation.core.FastOutSlowInEasing)
+                            ) { fullWidth -> -direction * fullWidth } + fadeOut(animationSpec = tween(220))
+                        )
+                },
+                label = "BottomNavSlide"
+            ) { screen ->
+                when (screen) {
+                    Screen.DASHBOARD -> MainDashboardContent(viewModel = viewModel)
+                    Screen.JADWAL -> JadwalScreen(viewModel = viewModel)
+                    Screen.ABSENSI -> AbsensiScreen(viewModel = viewModel)
+                    Screen.REKAP -> WeeklyRecapScreen(recapList = viewModel.getWeeklyRecap())
+                    Screen.JAMAAH -> JamaahScreen(viewModel = viewModel)
+                }
             }
 
             // Global dialogs available from any page

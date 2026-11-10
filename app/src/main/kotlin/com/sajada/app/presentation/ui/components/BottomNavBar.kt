@@ -1,5 +1,8 @@
 package com.sajada.app.presentation.ui.components
 
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
@@ -13,7 +16,9 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
@@ -50,6 +55,14 @@ fun SajadaBottomNavBar(
     ) {
         bottomNavItems.forEach { item ->
             val selected = currentScreen == item.screen
+            val iconScale by animateFloatAsState(
+                targetValue = if (selected) 1.15f else 1f,
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessMediumLow
+                ),
+                label = "NavIconScale"
+            )
             NavigationBarItem(
                 selected = selected,
                 onClick = { onSelect(item.screen) },
@@ -57,7 +70,9 @@ fun SajadaBottomNavBar(
                     Icon(
                         imageVector = item.icon,
                         contentDescription = item.label,
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier
+                            .size(24.dp)
+                            .scale(iconScale)
                     )
                 },
                 label = {
