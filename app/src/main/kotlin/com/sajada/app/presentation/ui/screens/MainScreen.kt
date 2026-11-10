@@ -184,8 +184,8 @@ fun MainDashboardContent(viewModel: AttendanceViewModel) {
                             } else {
                                 ManualAttendanceForm(
                                     jamaahList = jamaahList,
-                                    onRecord = { jamaahId, waktu ->
-                                        viewModel.recordManual(jamaahId, waktu)
+                                    onRecordStatus = { jamaahId, waktu, status ->
+                                        viewModel.recordManualStatus(jamaahId, waktu, status)
                                     }
                                 )
                             }
@@ -388,86 +388,127 @@ fun BluetoothStatusCard(
 @Composable
 fun ManualAttendanceForm(
     jamaahList: List<Jamaah>,
-    onRecord: (String, WaktuShalat) -> Unit
+    onRecordStatus: (String, WaktuShalat, StatusAbsensi) -> Unit
 ) {
-    var selectedJamaahId by remember { mutableStateOf(jamaahList.firstOrNull()?.id ?: "") }
     var selectedPrayer by remember { mutableStateOf(WaktuShalat.DZUHUR) }
-    var jamaahDropdownExpanded by remember { mutableStateOf(false) }
     var prayerDropdownExpanded by remember { mutableStateOf(false) }
 
-    val selectedJamaahName = jamaahList.find { it.id == selectedJamaahId }?.nama ?: "Pilih Jamaah"
-
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text("Form Absensi Manual (Admin)", fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = Color.White)
-
-        Box(modifier = Modifier.fillMaxWidth()) {
-            OutlinedButton(
-                onClick = { jamaahDropdownExpanded = true },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(selectedJamaahName, color = Color.White)
-                    Icon(Icons.Default.ArrowDropDown, contentDescription = null, tint = Color.White)
-                }
-            }
-            DropdownMenu(expanded = jamaahDropdownExpanded, onDismissRequest = { jamaahDropdownExpanded = false }) {
-                jamaahList.forEach { j ->
-                    DropdownMenuItem(
-                        text = { Text(j.nama) },
-                        onClick = {
-                            selectedJamaahId = j.id
-                            jamaahDropdownExpanded = false
-                        }
-                    )
-                }
-            }
-        }
-
-        Box(modifier = Modifier.fillMaxWidth()) {
-            OutlinedButton(
-                onClick = { prayerDropdownExpanded = true },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text("Waktu Shalat: $selectedPrayer", color = Color.White)
-                    Icon(Icons.Default.ArrowDropDown, contentDescription = null, tint = Color.White)
-                }
-            }
-            DropdownMenu(expanded = prayerDropdownExpanded, onDismissRequest = { prayerDropdownExpanded = false }) {
-                WaktuShalat.values().forEach { prayer ->
-                    DropdownMenuItem(
-                        text = { Text(prayer.name) },
-                        onClick = {
-                            selectedPrayer = prayer
-                            prayerDropdownExpanded = false
-                        }
-                    )
-                }
-            }
-        }
-
-        Button(
-            onClick = {
-                if (selectedJamaahId.isNotBlank()) {
-                    onRecord(selectedJamaahId, selectedPrayer)
-                }
-            },
+    Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+        Row(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp)
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(Icons.Default.Check, contentDescription = null)
-            Spacer(modifier = Modifier.width(8.dp))
-            Text("Simpan Kehadiran")
+            Text("Pilih Waktu Shalat:", fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = Color.White)
+            
+            Box {
+                OutlinedButton(
+                    onClick = { prayerDropdownExpanded = true },
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
+                ) {
+                    Text(selectedPrayer.name)
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Icon(Icons.Default.ArrowDropDown, contentDescription = null)
+                }
+                DropdownMenu(expanded = prayerDropdownExpanded, onDismissRequest = { prayerDropdownExpanded = false }) {
+                    WaktuShalat.values().forEach { prayer ->
+                        DropdownMenuItem(
+                            text = { Text(prayer.name) },
+                            onClick = {
+                                selectedPrayer = prayer
+                                prayerDropdownExpanded = false
+                            }
+                        )
+                    }
+                }
+            }
+        }
+
+        Divider(color = Color.White.copy(alpha = 0.2f))
+
+        Text("Daftar Jamaah & Quick Action Absensi:", fontWeight = FontWeight.SemiBold, fontSize = 13.sp, color = Color.White.copy(alpha = 0.9f))
+
+        if (jamaahList.isEmpty()) {
+            Text("Belum ada anggota jamaah terdaftar.", color = Color.White.copy(alpha = 0.6f), fontSize = 13.sp)
+        } else {
+            jamaahList.forEach { jamaah ->
+                GlassCard(
+                    modifier = Modifier.fillMaxWidth(),
+                    cornerRadius = 20.dp
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column {
+                                Text(jamaah.nama, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = Color.White)
+                                Text("ID: ${jamaah.id}", fontSize = 11.sp, color = Color.White.copy(alpha = 0.7f))
+                            }
+                        }
+
+                        // 4 Status Buttons: Hadir, Sakit, Izin, Alfa
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            StatusActionButton(
+                                title = "Hadir",
+                                color = Color(0xFF00C853),
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                onRecordStatus(jamaah.id, selectedPrayer, StatusAbsensi.HADIR)
+                            }
+
+                            StatusActionButton(
+                                title = "Sakit",
+                                color = Color(0xFF29B6F6),
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                onRecordStatus(jamaah.id, selectedPrayer, StatusAbsensi.SAKIT)
+                            }
+
+                            StatusActionButton(
+                                title = "Izin",
+                                color = Color(0xFFFFB300),
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                onRecordStatus(jamaah.id, selectedPrayer, StatusAbsensi.IZIN)
+                            }
+
+                            StatusActionButton(
+                                title = "Alfa",
+                                color = Color(0xFFFF5252),
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                onRecordStatus(jamaah.id, selectedPrayer, StatusAbsensi.TIDAK_HADIR)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun StatusActionButton(title: String, color: Color, modifier: Modifier = Modifier, onClick: () -> Unit) {
+    Surface(
+        onClick = onClick,
+        modifier = modifier.height(34.dp),
+        shape = RoundedCornerShape(10.dp),
+        color = color.copy(alpha = 0.85f),
+        shadowElevation = 2.dp
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Text(title, fontWeight = FontWeight.Bold, fontSize = 12.sp, color = Color.White)
         }
     }
 }

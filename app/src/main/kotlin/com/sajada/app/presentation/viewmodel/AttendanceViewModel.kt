@@ -127,6 +127,18 @@ class AttendanceViewModel(application: Application) : AndroidViewModel(applicati
         _latestAttendanceEvent.value = log
     }
 
+    fun recordManualStatus(jamaahId: String, waktuShalat: WaktuShalat, status: StatusAbsensi) {
+        val baseLog = recordManualUseCase.execute(jamaahId, waktuShalat, jadwalHariIni, System.currentTimeMillis())
+        val updatedLog = baseLog.copy(status = status)
+        val logs = attendanceRepo.getAllLogs().toMutableList()
+        if (logs.isNotEmpty()) {
+            logs[logs.size - 1] = updatedLog
+            attendanceRepo.clear()
+            logs.forEach { attendanceRepo.saveLog(it) }
+        }
+        _latestAttendanceEvent.value = updatedLog
+    }
+
     fun simulateFingerprint(fingerprintId: String) {
         viewModelScope.launch {
             try {
